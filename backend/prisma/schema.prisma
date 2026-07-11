@@ -1,0 +1,347 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String             @id @default(uuid())
+  employeeId          String             @unique
+  firstName           String
+  lastName            String
+  email               String             @unique
+  passwordHash        String
+  mustChangePassword  Boolean            @default(true)
+  role                Role               @default(WORKER)
+  accountStatus       AccountStatus      @default(ACTIVE)
+  lastLogin           DateTime?
+  lastSeen            DateTime?
+  presence            PresenceStatus     @default(ONLINE)
+  passwordChangedAt   DateTime?
+  notifyTasks         Boolean            @default(true)
+  notifyGroups        Boolean            @default(true)
+  notifyAnnouncements Boolean            @default(true)
+  notifyBrowser       Boolean            @default(false)
+  notifySounds        Boolean            @default(true)
+  quietHoursStart     String?
+  quietHoursEnd       String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  vendorId            String?
+  activities          Activity[]
+  chatMembers         ChatMember[]
+  messagesSent        Message[]
+  notifications       Notification[]
+  pushSubscriptions   PushSubscription[]
+  reportHistories     ReportHistory[]
+  reportJobs          ReportJob[]
+  sessions            Session[]
+  approvedTasks       Task[]             @relation("ApprovedTasks")
+  tasks               Task[]             @relation("WorkerTasks")
+  historyPerformed    TaskHistory[]
+  handbookDocuments   HandbookDocument[]
+  vendor              Vendor?            @relation(fields: [vendorId], references: [id])
+}
+
+model Vendor {
+  id        String        @id @default(uuid())
+  name      String
+  code      String        @unique
+  key       String
+  email     String        @unique
+  status    AccountStatus @default(ACTIVE)
+  clientId  String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  tasks     Task[]
+  users     User[]
+}
+
+model Task {
+  id                String        @id @default(uuid())
+  taskId            String        @unique
+  taskName          String
+  clientName        String        @default("Snorkel")
+  status            TaskStatus    @default(IN_PROGRESS)
+  startedAt         DateTime      @default(now())
+  expectedEndDate   DateTime
+  endedAt           DateTime?
+  timeSpentMinutes  Int?
+  submittedAt       DateTime?
+  lockedAt          DateTime
+  isLocked          Boolean       @default(false)
+  acceptedAt        DateTime?
+  rejectedAt        DateTime?
+  rejectionReason   String?
+  managementComment String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  workerId          String
+  vendorId          String
+  approvedById      String?
+  approvedBy        User?         @relation("ApprovedTasks", fields: [approvedById], references: [id])
+  vendor            Vendor        @relation(fields: [vendorId], references: [id])
+  worker            User          @relation("WorkerTasks", fields: [workerId], references: [id])
+  history           TaskHistory[]
+}
+
+model TaskHistory {
+  id            String   @id @default(uuid())
+  action        String
+  timestamp     DateTime @default(now())
+  details       String?
+  taskId        String
+  performedById String
+  performedBy   User     @relation(fields: [performedById], references: [id])
+  task          Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+}
+
+model Chat {
+  id         String       @id @default(uuid())
+  name       String
+  type       ChatType
+  vendorId   String?
+  ownerId    String?
+  archived   Boolean      @default(false)
+  archivedAt DateTime?
+  archivedBy String?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  members    ChatMember[]
+  messages   Message[]
+}
+
+model ChatMember {
+  id         String   @id @default(uuid())
+  chatId     String
+  userId     String
+  joinedAt   DateTime @default(now())
+  lastReadAt DateTime @default(now())
+  chat       Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([chatId, userId])
+}
+
+model Message {
+  id        String        @id @default(uuid())
+  chatId    String
+  senderId  String
+  message   String
+  status    MessageStatus @default(SENT)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  chat      Chat          @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  sender    User          @relation(fields: [senderId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id                String               @id @default(uuid())
+  recipientUserId   String
+  title             String
+  message           String
+  type              NotificationType
+  priority          NotificationPriority @default(NORMAL)
+  isRead            Boolean              @default(false)
+  deliveryStatus    DeliveryStatus       @default(PENDING)
+  deliveredAt       DateTime?
+  dedupKey          String?
+  relatedEntityType String?
+  relatedEntityId   String?
+  createdAt         DateTime             @default(now())
+  readAt            DateTime?
+  recipient         User                 @relation(fields: [recipientUserId], references: [id], onDelete: Cascade)
+
+  @@index([dedupKey])
+}
+
+model Activity {
+  id          String   @id @default(uuid())
+  actorUserId String
+  action      String
+  entityType  String
+  entityId    String
+  createdAt   DateTime @default(now())
+  actor       User     @relation(fields: [actorUserId], references: [id], onDelete: Cascade)
+}
+
+model ReportHistory {
+  id         String     @id @default(uuid())
+  userId     String
+  reportType ReportType
+  filters    String
+  createdAt  DateTime   @default(now())
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ReportJob {
+  id               String          @id @default(uuid())
+  userId           String
+  reportType       ReportType
+  filters          String
+  status           ReportJobStatus @default(QUEUED)
+  fileUrl          String?
+  error            String?
+  downloadCount    Int             @default(0)
+  lastDownloadedAt DateTime?
+  createdAt        DateTime        @default(now())
+  completedAt      DateTime?
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PushSubscription {
+  id         String   @id @default(uuid())
+  userId     String
+  endpoint   String
+  publicKey  String
+  authKey    String
+  deviceName String?
+  browser    String?
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  lastUsedAt DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Session {
+  id             String   @id @default(uuid())
+  userId         String
+  ip             String?
+  userAgent      String?
+  isValid        Boolean  @default(true)
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
+  lastActivityAt DateTime @default(now())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model LoginAttempt {
+  id        String   @id @default(uuid())
+  email     String
+  ip        String?
+  success   Boolean  @default(false)
+  timestamp DateTime @default(now())
+}
+
+model ErrorLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  requestId  String?
+  error      String
+  stackTrace String?
+  route      String?
+  timestamp  DateTime @default(now())
+}
+
+model SystemSetting {
+  key         String   @id
+  value       String
+  description String?
+  updatedAt   DateTime @updatedAt
+}
+
+model Backup {
+  id        String   @id @default(uuid())
+  filename  String   @unique
+  size      Int
+  status    String
+  hash      String?
+  createdAt DateTime @default(now())
+}
+
+model SystemAlert {
+  id         String   @id @default(uuid())
+  type       String
+  message    String
+  isResolved Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+model HandbookDocument {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  fileUrl   String?
+  fileName  String?
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  author    User     @relation(fields: [authorId], references: [id])
+}
+
+enum Role {
+  MANAGEMENT
+  VENDOR
+  WORKER
+}
+
+enum AccountStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum TaskStatus {
+  IN_PROGRESS
+  IN_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum ChatType {
+  GLOBAL
+  ANNOUNCEMENT
+  VENDOR
+  GROUP
+  DIRECT
+}
+
+enum NotificationType {
+  TASK_CREATED
+  TASK_ACCEPTED
+  TASK_REJECTED
+  GROUP_INVITE
+  ANNOUNCEMENT
+  SYSTEM
+}
+
+enum DeliveryStatus {
+  PENDING
+  DELIVERED
+  FAILED
+}
+
+enum NotificationPriority {
+  NORMAL
+  IMPORTANT
+}
+
+enum ReportType {
+  TASKS
+  WORKERS
+  VENDORS
+}
+
+enum ReportJobStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+  EXPIRED
+}
+
+enum MessageStatus {
+  SENT
+  DELIVERED
+  READ
+}
+
+enum PresenceStatus {
+  ONLINE
+  AWAY
+  BUSY
+  OFFLINE
+}

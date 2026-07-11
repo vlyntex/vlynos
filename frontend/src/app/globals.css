@@ -1,0 +1,198 @@
+/* ==========================================================================
+   VlynTech Design System Tokens
+   ========================================================================== */
+   
+   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
+
+   :root {
+     /* -- Colors (Light Mode) -- */
+     --color-primary-50: #fff7ed;
+     --color-primary-100: #ffedd5;
+     --color-primary-500: #f97316;
+     --color-primary-600: #ea580c;
+     --color-primary-700: #c2410c;
+     
+     --color-success: #10b981;
+     --color-success-light: #d1fae5;
+     --color-danger: #ef4444;
+     --color-danger-light: #fee2e2;
+     --color-warning: #f59e0b;
+     --color-warning-light: #fef3c7;
+     --color-info: #0ea5e9;
+     
+     --bg-main: #fcfcfc;
+     --bg-surface: #ffffff;
+     --bg-surface-hover: #f3f4f6;
+     --bg-surface-active: #e5e7eb;
+     
+     --text-primary: #0a0a0a;
+     --text-secondary: #525252;
+     --text-tertiary: #a3a3a3;
+     --text-inverse: #ffffff;
+     
+     --border-light: #f5f5f5;
+     --border-medium: #e5e5e5;
+     --border-focus: #f97316;
+   
+     /* -- Typography -- */
+     --font-sans: 'Inter', system-ui, sans-serif;
+     --font-heading: 'Outfit', system-ui, sans-serif;
+     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+     
+     --text-xs: 0.75rem;
+     --text-sm: 0.875rem;
+     --text-base: 1rem;
+     --text-lg: 1.125rem;
+     --text-xl: 1.25rem;
+     --text-2xl: 1.5rem;
+     --text-3xl: 1.875rem;
+   
+     /* -- Border Radius -- */
+     --radius-sm: 0.25rem;
+     --radius-md: 0.5rem;
+     --radius-lg: 0.75rem;
+     --radius-xl: 1rem;
+     --radius-full: 9999px;
+   
+     /* -- Shadows -- */
+     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+     --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.05), 0 4px 10px -2px rgba(0, 0, 0, 0.03);
+     --shadow-focus: 0 0 0 3px rgba(249, 115, 22, 0.2);
+   
+     /* -- Spacing -- */
+     --space-1: 0.25rem;
+     --space-2: 0.5rem;
+     --space-3: 0.75rem;
+     --space-4: 1rem;
+     --space-5: 1.25rem;
+     --space-6: 1.5rem;
+     --space-8: 2rem;
+     --space-10: 2.5rem;
+     --space-12: 3rem;
+   
+     /* -- Animation & Motion -- */
+     --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+     --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+     --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+   
+     /* -- Z-Index -- */
+     --z-base: 1;
+     --z-dropdown: 100;
+     --z-sticky: 200;
+     --z-overlay: 300;
+     --z-modal: 400;
+     --z-toast: 500;
+   }
+   
+   /* ==========================================================================
+      Dark Theme Overrides
+      ========================================================================== */
+   [data-theme='dark'] {
+     --color-primary-50: #431407;
+     --color-primary-100: #7c2d12;
+     --color-primary-500: #f97316;
+     --color-primary-600: #fb923c;
+     
+     --bg-main: #000000;
+     --bg-surface: #0a0a0a;
+     --bg-surface-hover: #171717;
+     --bg-surface-active: #262626;
+     
+     --text-primary: #fafafa;
+     --text-secondary: #a3a3a3;
+     --text-tertiary: #737373;
+     
+     --border-light: #171717;
+     --border-medium: #262626;
+   
+     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+     --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.5);
+   }
+   
+   /* ==========================================================================
+      Global Resets & Base Styles
+      ========================================================================== */
+   *, *::before, *::after {
+     box-sizing: border-box;
+     margin: 0;
+     padding: 0;
+   }
+   
+   html {
+     font-family: var(--font-sans);
+     color: var(--text-primary);
+     background-color: var(--bg-main);
+     line-height: 1.5;
+     -webkit-font-smoothing: antialiased;
+     -moz-osx-font-smoothing: grayscale;
+     transition: background-color var(--transition-normal), color var(--transition-normal);
+   }
+   
+   body {
+     min-height: 100vh;
+   }
+
+   h1, h2, h3, h4, h5, h6 {
+     font-family: var(--font-heading);
+     letter-spacing: -0.02em;
+   }
+   
+   a {
+     color: var(--text-primary);
+     text-decoration: none;
+     transition: color var(--transition-fast);
+   }
+   a:hover {
+     color: var(--color-primary-500);
+   }
+   
+   button {
+     font-family: inherit;
+     cursor: pointer;
+   }
+   
+   /* ==========================================================================
+      Accessibility Utilities
+      ========================================================================== */
+   :focus-visible {
+     outline: 2px solid var(--border-focus);
+     outline-offset: 2px;
+   }
+   
+   @media (prefers-reduced-motion: reduce) {
+     *, *::before, *::after {
+       animation-duration: 0.01ms !important;
+       animation-iteration-count: 1 !important;
+       transition-duration: 0.01ms !important;
+       scroll-behavior: auto !important;
+     }
+   }
+   
+   .sr-only {
+     position: absolute;
+     width: 1px;
+     height: 1px;
+     padding: 0;
+     margin: -1px;
+     overflow: hidden;
+     clip: rect(0, 0, 0, 0);
+     white-space: nowrap;
+     border-width: 0;
+   }
+   
+   .skip-to-content {
+     position: absolute;
+     top: -40px;
+     left: 0;
+     background: var(--color-primary-600);
+     color: white;
+     padding: 8px;
+     z-index: var(--z-toast);
+     transition: top var(--transition-fast);
+   }
+   
+   .skip-to-content:focus {
+     top: 0;
+   }

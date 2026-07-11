@@ -1,0 +1,16 @@
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-surface-hover) 25%,
+    var(--bg-surface-active) 50%,
+    var(--bg-surface-hover) 75%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.5s infinite ease-in-out;
+  border-radius: var(--radius-md);
+}
+
+@keyframes shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
