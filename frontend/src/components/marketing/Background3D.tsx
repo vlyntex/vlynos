@@ -182,13 +182,15 @@ function CinematicEffects({ dpr }: { dpr: number }) {
         intensity={1.5} 
         mipmapBlur 
       />
-      {dpr > 1 && (
+       {dpr > 1 ? (
         <DepthOfField 
           focusDistance={0.0} 
           focalLength={0.02} 
           bokehScale={2} 
           height={480} 
         />
+      ) : (
+        <></>
       )}
       <Noise opacity={0.02} />
     </EffectComposer>
