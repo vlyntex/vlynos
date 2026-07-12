@@ -37,18 +37,15 @@ function GlacierShards({ dpr }: { dpr: number }) {
       ref.current.rotation.y = time * 0.02 + scrollY * 0.0005;
       ref.current.rotation.x = Math.sin(time * 0.05) * 0.1 + scrollY * 0.0002;
       
-      // Floating glass response & magnetic interaction
       ref.current.position.x = THREE.MathUtils.lerp(ref.current.position.x, (state.pointer.x * state.viewport.width) / 20, 0.05);
       ref.current.position.y = THREE.MathUtils.lerp(ref.current.position.y, (state.pointer.y * state.viewport.height) / 20 + (scrollY * 0.01), 0.05);
     }
   });
 
-  // Scale down complexity if DPR is low
-  const materialQuality = dpr > 1 ? 0 : 1; // Used for transmission/roughness tuning if needed
+  const materialQuality = dpr > 1 ? 0 : 1;
 
   return (
     <group ref={ref}>
-      {/* Clear Glacier Prisms */}
       <Instances limit={SHARD_COUNT} range={SHARD_COUNT}>
         <octahedronGeometry args={[1, 0]} />
         <meshPhysicalMaterial 
@@ -68,7 +65,6 @@ function GlacierShards({ dpr }: { dpr: number }) {
         ))}
       </Instances>
 
-      {/* Hexagon/Cylinder Glass */}
       <Instances limit={SHARD_COUNT} range={SHARD_COUNT}>
         <cylinderGeometry args={[0.5, 0.5, 1.5, 6]} />
         <meshPhysicalMaterial 
@@ -86,7 +82,6 @@ function GlacierShards({ dpr }: { dpr: number }) {
         ))}
       </Instances>
 
-      {/* Frosted Glacier Layers */}
       <Instances limit={SHARD_COUNT} range={SHARD_COUNT}>
         <boxGeometry args={[2, 2, 0.2]} />
         <meshPhysicalMaterial 
@@ -139,7 +134,6 @@ function ObsidianGeometry() {
 
   return (
     <group ref={ref}>
-      {/* Polished Obsidian Cubes */}
       <Instances limit={OBSIDIAN_COUNT} range={OBSIDIAN_COUNT}>
         <boxGeometry args={[1, 1, 1]} />
         <meshPhysicalMaterial 
@@ -155,7 +149,6 @@ function ObsidianGeometry() {
         ))}
       </Instances>
 
-      {/* Crystal Wireframes with Orange Glow Edge */}
       <Instances limit={OBSIDIAN_COUNT} range={OBSIDIAN_COUNT}>
         <octahedronGeometry args={[1, 0]} />
         <meshBasicMaterial 
@@ -173,22 +166,23 @@ function ObsidianGeometry() {
 }
 
 function CinematicEffects({ dpr }: { dpr: number }) {
-  // Only render expensive DOF on high-end devices (DPR > 1)
   return (
-    <EffectComposer multisampling={dpr > 1 ? 2 : 0} disableNormalPass>
+    <EffectComposer multisampling={dpr > 1 ? 2 : 0} enableNormalPass={false}>
       <Bloom 
         luminanceThreshold={0.5} 
         luminanceSmoothing={0.9} 
         intensity={1.5} 
         mipmapBlur 
       />
-      {dpr > 1 && (
+      {dpr > 1 ? (
         <DepthOfField 
           focusDistance={0.0} 
           focalLength={0.02} 
           bokehScale={2} 
           height={480} 
         />
+      ) : (
+        <></>
       )}
       <Noise opacity={0.02} />
     </EffectComposer>
@@ -207,11 +201,9 @@ export function Background3D() {
       >
         <PerformanceMonitor onDecline={() => setDpr(1)} onIncline={() => setDpr(2)} />
         
-        {/* Cinematic Studio Lighting */}
         <ambientLight intensity={0.5} />
         <directionalLight position={[10, 20, 10]} intensity={3} color="#FFFFFF" castShadow />
         
-        {/* Orange Rim Light */}
         <spotLight 
           position={[-15, -10, -15]} 
           intensity={8} 
@@ -224,11 +216,9 @@ export function Background3D() {
         <GlacierShards dpr={dpr} />
         <ObsidianGeometry />
         
-        {/* Volumetric ambient particles */}
         <Sparkles count={200} scale={30} size={1} speed={0.1} opacity={0.3} color="#0A0A0A" />
         <Sparkles count={100} scale={20} size={3} speed={0.3} opacity={0.6} color="#FF6A00" />
         
-        {/* Global Illumination / Reflections */}
         <Environment preset="studio" />
         
         <CinematicEffects dpr={dpr} />

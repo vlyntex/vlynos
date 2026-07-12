@@ -64,7 +64,7 @@ export function Portraits() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.8, delay: index * 0.2 }}
-              style={{ position: 'relative', group: 'true' }}
+              style={{ position: 'relative'}}
             >
               <div style={{ 
                 position: 'relative', 
