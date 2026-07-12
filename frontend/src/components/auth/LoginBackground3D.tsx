@@ -105,7 +105,7 @@ function NeuralNetwork() {
     <group>
       <points ref={pointsRef}>
         <bufferGeometry>
-          <bufferAttribute attach="attributes-position" count={nodeCount} array={positionsArray} itemSize={3} />
+          <bufferAttribute attach="attributes-position" count={nodeCount} array={positionsArray} itemSize={3} args={[positionsArray, 3]} />
         </bufferGeometry>
         {/* Dark charcoal color for nodes */}
         <pointsMaterial size={0.15} color="#1e293b" transparent opacity={0.8} sizeAttenuation />
