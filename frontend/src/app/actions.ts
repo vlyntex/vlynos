@@ -1,71 +1,50 @@
 'use server';
 
-import { Client } from 'pg';
 import { cookies } from 'next/headers';
 
-const DATABASE_URL = process.env.DATABASE_URL || "postgresql://postgres:Koushik%401618@localhost:5432/vlyntech_dev?schema=public";
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000';
 
-function getClient() {
-  return new Client({ connectionString: DATABASE_URL });
+async function backendDelete(path: string) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('token');
+  const csrfToken = cookieStore.get('csrfToken');
+
+  if (!token) throw new Error('Unauthorized');
+
+  const cookieHeader = [
+    `token=${token.value}`,
+    csrfToken ? `csrfToken=${csrfToken.value}` : '',
+  ].filter(Boolean).join('; ');
+
+  const res = await fetch(`${BACKEND_URL}/api/v1${path}`, {
+    method: 'DELETE',
+    headers: {
+      Cookie: cookieHeader,
+      'x-csrf-token': csrfToken?.value || '',
+    },
+    cache: 'no-store',
+  });
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`Request failed (${res.status}): ${body}`);
+  }
+
+  return res.json().catch(() => ({}));
 }
 
 export async function deleteVendorAction(id: string) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('token');
-  if (!token) throw new Error("Unauthorized");
-  
-  const client = getClient();
-  await client.connect();
-  
-  try {
-    await client.query('BEGIN');
-    
-    await client.query('DELETE FROM "User" WHERE "vendorId" = $1', [id]);
-    await client.query('DELETE FROM "Vendor" WHERE id = $1', [id]);
-    
-    await client.query('COMMIT');
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  } finally {
-    await client.end();
-  }
+  return backendDelete(`/vendors/${id}`);
 }
 
 export async function deleteDeveloperAction(id: string) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('token');
-  if (!token) throw new Error("Unauthorized");
-  
-  const client = getClient();
-  await client.connect();
-  
-  try {
-    await client.query('DELETE FROM "User" WHERE id = $1', [id]);
-  } finally {
-    await client.end();
-  }
+  return backendDelete(`/workers/${id}`);
 }
 
 export async function deleteChatAction(id: string) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('token');
-  if (!token) throw new Error("Unauthorized");
-  
-  const client = getClient();
-  await client.connect();
-  
-  try {
-    // Delete the chat; cascade should handle members and messages, but we use raw queries so we delete them manually if not cascaded.
-    await client.query('BEGIN');
-    await client.query('DELETE FROM "Message" WHERE "chatId" = $1', [id]);
-    await client.query('DELETE FROM "ChatMember" WHERE "chatId" = $1', [id]);
-    await client.query('DELETE FROM "Chat" WHERE id = $1', [id]);
-    await client.query('COMMIT');
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  } finally {
-    await client.end();
-  }
+  // Your backend doesn't have a hard-delete endpoint for chats yet —
+  // only an "archive" one. Wire this up once you decide archive vs.
+  // delete is the right behavior. Left disabled on purpose for now
+  // rather than silently doing nothing.
+  throw new Error('Chat deletion is not yet available.');
 }
