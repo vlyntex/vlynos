@@ -40,7 +40,7 @@ export const api = {
     
     let json;
     const text = await res.text();
-    if (res.status === 401 && typeof window !== 'undefined') {
+    if (res.status === 401 && endpoint !== '/auth/login' && typeof window !== 'undefined') {
       window.location.href = '/login';
       return new Promise(() => {});
     }
