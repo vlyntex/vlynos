@@ -226,17 +226,28 @@ export const deleteVendor = async (req: Request, res: Response): Promise<void> =
   try {
     const id = String(req.params.id) as string;
 
-    // Delete associated users first
-    await prisma.user.deleteMany({
-      where: { vendorId: id as string }
+    const existingVendor = await prisma.vendor.findUnique({ where: { id: id as string } });
+    if (!existingVendor) {
+      res.status(404).json({ message: 'Vendor not found', requestId: req.id });
+      return;
+    }
+
+    // Soft delete: deactivate the vendor and its workers rather than hard-deleting,
+    // since any of them with task/activity history can't be removed from the
+    // database without breaking that history (Postgres blocks it via foreign
+    // key constraints anyway).
+    await prisma.user.updateMany({
+      where: { vendorId: id as string },
+      data: { accountStatus: 'INACTIVE' }
     });
 
-    await prisma.vendor.delete({
-      where: { id: id as string }
+    await prisma.vendor.update({
+      where: { id: id as string },
+      data: { status: 'INACTIVE' }
     });
 
-    logger.audit('VENDOR_DELETED', req, { targetVendorId: id });
-    res.status(200).json({ message: 'Vendor deleted successfully', requestId: req.id });
+    logger.audit('VENDOR_DEACTIVATED', req, { targetVendorId: id });
+    res.status(200).json({ message: 'Vendor deactivated successfully', requestId: req.id });
   } catch (error) {
     logger.error('Delete vendor error', error, req.id);
     res.status(500).json({ message: 'Internal server error', requestId: req.id });

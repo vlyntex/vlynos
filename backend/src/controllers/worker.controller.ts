@@ -375,12 +375,16 @@ export const deleteWorker = async (req: Request, res: Response): Promise<void> =
       }
     }
 
-    await prisma.user.delete({
-      where: { id: id as string }
+    // Soft delete: deactivate rather than hard-delete, since workers with any
+    // task/activity history can't be removed from the database without breaking
+    // that history (Postgres blocks it via foreign key constraints anyway).
+    await prisma.user.update({
+      where: { id: id as string },
+      data: { accountStatus: 'INACTIVE' }
     });
 
-    logger.audit('WORKER_DELETED', req, { targetUserId: id });
-    res.status(200).json({ message: 'Worker deleted successfully', requestId: req.id });
+    logger.audit('WORKER_DEACTIVATED', req, { targetUserId: id });
+    res.status(200).json({ message: 'Worker deactivated successfully', requestId: req.id });
   } catch (error) {
     logger.error('Delete worker error', error, req.id);
     res.status(500).json({ message: 'Internal server error', requestId: req.id });
