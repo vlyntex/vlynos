@@ -4,33 +4,46 @@ import { cookies } from 'next/headers';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000';
 
-async function backendDelete(path: string) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('token');
-  const csrfToken = cookieStore.get('csrfToken');
+async function backendDelete(path: string): Promise<{ success: boolean; message: string }> {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('token');
+    const csrfToken = cookieStore.get('csrfToken');
 
-  if (!token) throw new Error('Unauthorized');
+    if (!token) {
+      return { success: false, message: 'Unauthorized — please log in again.' };
+    }
 
-  const cookieHeader = [
-    `token=${token.value}`,
-    csrfToken ? `csrfToken=${csrfToken.value}` : '',
-  ].filter(Boolean).join('; ');
+    const cookieHeader = [
+      `token=${token.value}`,
+      csrfToken ? `csrfToken=${csrfToken.value}` : '',
+    ].filter(Boolean).join('; ');
 
-  const res = await fetch(`${BACKEND_URL}/api/v1${path}`, {
-    method: 'DELETE',
-    headers: {
-      Cookie: cookieHeader,
-      'x-csrf-token': csrfToken?.value || '',
-    },
-    cache: 'no-store',
-  });
+    const res = await fetch(`${BACKEND_URL}/api/v1${path}`, {
+      method: 'DELETE',
+      headers: {
+        Cookie: cookieHeader,
+        'x-csrf-token': csrfToken?.value || '',
+      },
+      cache: 'no-store',
+    });
 
-  if (!res.ok) {
-    const body = await res.text().catch(() => '');
-    throw new Error(`Request failed (${res.status}): ${body}`);
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      let message = `Request failed (${res.status})`;
+      try {
+        const parsed = JSON.parse(body);
+        if (parsed?.message) message = parsed.message;
+      } catch {
+        if (body) message = body.slice(0, 300);
+      }
+      return { success: false, message };
+    }
+
+    return { success: true, message: 'Deleted successfully.' };
+  } catch (err: any) {
+    return { success: false, message: `Server error: ${err?.message || 'unknown error'}` };
   }
-
-  return res.json().catch(() => ({}));
 }
 
 export async function deleteVendorAction(id: string) {
@@ -42,9 +55,5 @@ export async function deleteDeveloperAction(id: string) {
 }
 
 export async function deleteChatAction(id: string) {
-  // Your backend doesn't have a hard-delete endpoint for chats yet —
-  // only an "archive" one. Wire this up once you decide archive vs.
-  // delete is the right behavior. Left disabled on purpose for now
-  // rather than silently doing nothing.
-  throw new Error('Chat deletion is not yet available.');
+  return { success: false, message: 'Chat deletion is not yet available.' };
 }

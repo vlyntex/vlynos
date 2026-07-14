@@ -41,11 +41,11 @@ export default function WorkersPage() {
       return;
     }
     if (window.confirm('Are you sure you want to delete this developer? This action cannot be undone.')) {
-      try {
-        await deleteDeveloperAction(id);
+      const result = await deleteDeveloperAction(id);
+      if (result.success) {
         fetchWorkers();
-      } catch (err: any) {
-        alert(err.message);
+      } else {
+        alert(result.message);
       }
     }
   };

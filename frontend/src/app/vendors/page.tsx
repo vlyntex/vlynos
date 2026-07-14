@@ -35,11 +35,11 @@ export default function VendorsPage() {
       return;
     }
     if (window.confirm('Are you sure you want to delete this partner? This action cannot be undone.')) {
-      try {
-        await deleteVendorAction(id);
+      const result = await deleteVendorAction(id);
+      if (result.success) {
         fetchVendors();
-      } catch (err: any) {
-        alert(err.message);
+      } else {
+        alert(result.message);
       }
     }
   };
