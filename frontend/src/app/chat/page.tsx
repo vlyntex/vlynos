@@ -6,6 +6,7 @@ import { useChatStore } from '@/store/chatStore';
 import { ChatSidebar } from '@/components/chat/ChatSidebar';
 import { ChatWindow } from '@/components/chat/ChatWindow';
 import { useNativeNotification } from '@/hooks/useNativeNotification';
+import { deleteChatAction } from '../actions';
 
 export default function ChatPage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -25,6 +26,7 @@ export default function ChatPage() {
 
   const setChats = useChatStore(state => state.setChats);
   const updateChat = useChatStore(state => state.updateChat);
+  const removeChat = useChatStore(state => state.removeChat);
   const activeChatId = useChatStore(state => state.activeChatId);
   const setActiveChatId = useChatStore(state => state.setActiveChatId);
   const addMessage = useChatStore(state => state.addMessage);
@@ -225,6 +227,22 @@ export default function ChatPage() {
       return [...prev, user];
     });
   };
+  
+   const handleDeleteChat = async () => {
+    if (!activeChatId) return;
+    const confirmed = window.confirm('Delete this chat? This cannot be undone.');
+    if (!confirmed) return;
+
+    const chatIdToDelete = activeChatId;
+    const result = await deleteChatAction(chatIdToDelete);
+
+    if (result.success) {
+      removeChat(chatIdToDelete);
+    } else {
+      alert(result.message || 'Failed to delete chat.');
+    }
+  };
+
 
   return (
     <div style={{ display: 'flex', height: 'calc(100vh - 64px)', overflow: 'hidden', backgroundColor: 'transparent', fontFamily: 'Inter, sans-serif' }}>
@@ -240,6 +258,7 @@ export default function ChatPage() {
         socket={socket}
         onAddMember={() => { setShowAddMemberModal(true); setSelectedUsers([]); setUserSearchQuery(''); }}
         onLeaveChat={() => { alert('Not implemented'); }}
+        onDeleteChat={handleDeleteChat}
       />
       
       {/* Modals */}

@@ -58,5 +58,5 @@ export async function deleteDeveloperAction(id: string) {
 }
 
 export async function deleteChatAction(id: string) {
-  return { success: false, message: 'Chat deletion is not yet available.' };
+  return backendDelete(`/chat/${id}`);
 }

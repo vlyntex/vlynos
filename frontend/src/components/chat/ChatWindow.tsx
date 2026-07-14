@@ -9,12 +9,14 @@ export function ChatWindow({
   currentUser, 
   socket,
   onAddMember, 
-  onLeaveChat 
+  onLeaveChat,
+  onDeleteChat
 }: { 
   currentUser: any; 
   socket: any;
   onAddMember: () => void;
   onLeaveChat: () => void;
+  onDeleteChat: () => void;
 }) {
   const activeChatId = useChatStore(state => state.activeChatId);
   const chats = useChatStore(state => state.chats);
@@ -151,9 +153,11 @@ export function ChatWindow({
               <button onClick={() => { setShowDropdown(false); onLeaveChat(); }} style={{ display: 'block', width: '100%', padding: '12px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', color: '#64748b' }}>
                 Leave Chat
               </button>
-              <button onClick={() => { setShowDropdown(false); alert('Delete chat not implemented'); }} style={{ display: 'block', width: '100%', padding: '12px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', color: '#ef4444', borderTop: '1px solid #f1f5f9' }}>
-                Delete Chat
-              </button>
+              {currentUser?.role === 'MANAGEMENT' && !['GLOBAL', 'ANNOUNCEMENT', 'VENDOR'].includes(activeChat.type) && (
+                <button onClick={() => { setShowDropdown(false); onDeleteChat(); }} style={{ display: 'block', width: '100%', padding: '12px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', color: '#ef4444', borderTop: '1px solid #f1f5f9' }}>
+                  Delete Chat
+                </button>
+              )}
             </div>
           )}
         </div>
