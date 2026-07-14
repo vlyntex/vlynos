@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { listChats, getMessages, createDirectMessage, createGroup, archiveGroup, searchUsers, sendMessage, addGroupMembers, markAsRead } from '../controllers/chat.controller';
+import { listChats, getMessages, createDirectMessage, createGroup, archiveGroup, deleteChat, searchUsers, sendMessage, addGroupMembers, markAsRead } from '../controllers/chat.controller';
 import { authenticate, requireRole } from '../middlewares/auth.middleware';
 
 const router = Router();
@@ -15,6 +15,7 @@ router.post('/direct', createDirectMessage);
 router.post('/group', requireRole(['MANAGEMENT', 'VENDOR']), createGroup);
 router.post('/group/:id/members', addGroupMembers);
 router.patch('/group/:id/archive', requireRole(['MANAGEMENT', 'VENDOR']), archiveGroup);
+router.delete('/:id', requireRole(['MANAGEMENT']), deleteChat);
 router.get('/users', searchUsers);
 
 export default router;

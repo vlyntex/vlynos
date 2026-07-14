@@ -286,7 +286,38 @@ export const archiveGroup = async (req: Request, res: Response): Promise<void> =
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+export const deleteChat = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const id = String(req.params.id) as string;
+    const user = req.user!;
 
+    if (user.role !== 'MANAGEMENT') {
+      res.status(403).json({ message: 'Forbidden' });
+      return;
+    }
+
+    const chat = await prisma.chat.findUnique({ where: { id } });
+    if (!chat) {
+      res.status(404).json({ message: 'Chat not found' });
+      return;
+    }
+
+    if (chat.type === 'GLOBAL' || chat.type === 'ANNOUNCEMENT' || chat.type === 'VENDOR') {
+      res.status(400).json({ message: 'System chats cannot be deleted' });
+      return;
+    }
+
+    await prisma.chat.delete({ where: { id } });
+
+    logger.audit('CHAT_DELETED', req, { chatId: id });
+    await ActivityService.create({ actorUserId: user.id, action: 'CHAT_DELETED', entityType: 'CHAT', entityId: id });
+
+    res.status(200).json({ message: 'Chat deleted' });
+  } catch (err) {
+    logger.error('Delete chat error', err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
 export const addGroupMembers = async (req: Request, res: Response): Promise<void> => {
   try {
     const id = String(req.params.id) as string;
