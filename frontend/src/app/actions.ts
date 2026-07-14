@@ -1,14 +1,16 @@
 'use server';
 
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4000';
 
 async function backendDelete(path: string): Promise<{ success: boolean; message: string }> {
   try {
     const cookieStore = await cookies();
+    const headerList = await headers();
     const token = cookieStore.get('token');
     const csrfToken = cookieStore.get('csrfToken');
+    const originalUserAgent = headerList.get('user-agent') || '';
 
     if (!token) {
       return { success: false, message: 'Unauthorized — please log in again.' };
@@ -24,6 +26,7 @@ async function backendDelete(path: string): Promise<{ success: boolean; message:
       headers: {
         Cookie: cookieHeader,
         'x-csrf-token': csrfToken?.value || '',
+        'User-Agent': originalUserAgent,
       },
       cache: 'no-store',
     });
