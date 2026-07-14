@@ -192,7 +192,7 @@ export const bulkCreateWorkers = async (req: Request, res: Response): Promise<vo
 export const listWorkers = async (req: Request, res: Response): Promise<void> => {
   try {
     const { search } = req.query;
-    let whereClause: any = { role: 'WORKER' };
+    let whereClause: any = { role: 'WORKER', accountStatus: { not: 'INACTIVE' } };
 
     // Vendor can only see their own workers
     if (req.user!.role === 'VENDOR') {

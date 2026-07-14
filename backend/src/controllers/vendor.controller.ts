@@ -91,17 +91,15 @@ export const createVendor = async (req: Request, res: Response): Promise<void> =
 export const listVendors = async (req: Request, res: Response): Promise<void> => {
   try {
     const { search } = req.query;
-    let whereClause = {};
+    let whereClause: any = { status: { not: 'INACTIVE' } };
 
     if (search) {
       const s = String(search);
-      whereClause = {
-        OR: [
-          { name: { contains: s, mode: 'insensitive' } },
-          { code: { contains: s, mode: 'insensitive' } },
-          { email: { contains: s, mode: 'insensitive' } }
-        ]
-      };
+      whereClause.OR = [
+        { name: { contains: s, mode: 'insensitive' } },
+        { code: { contains: s, mode: 'insensitive' } },
+        { email: { contains: s, mode: 'insensitive' } }
+      ];
     }
 
     const vendors = await prisma.vendor.findMany({
